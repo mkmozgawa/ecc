@@ -7,7 +7,7 @@ from ECurve import ECurve
 from ElGamalCipher import ElGamalCipher
 from Key import Key
 from KeyGenerator import KeyGenerator
-
+from Message import Message
 
 POINT_X = 0
 POINT_Y = 1
@@ -95,6 +95,18 @@ class KeyGeneratorTestCase(unittest.TestCase):
         self.ec = ECurve(ECURVE_A, ECURVE_B, ECURVE_P)
         self.key = KeyGenerator(self.ec)
 
+    def test_public_key_contains_ec_and_two_points(self):
+        self.assertIsInstance(self.key.public_key.ec, ECurve)
+        self.assertIsInstance(self.key.public_key.P, EPoint)
+        self.assertIsInstance(self.key.public_key.Q, EPoint)
+        self.assertIsNone(self.key.public_key.x)
+
+    def test_private_key_contains_ec_and_two_points_and_x(self):
+        self.assertIsInstance(self.key.private_key.ec, ECurve)
+        self.assertIsInstance(self.key.private_key.P, EPoint)
+        self.assertIsInstance(self.key.private_key.Q, EPoint)
+        self.assertIsNotNone(self.key.private_key.x)
+
 # class ElGamalCipherTestCase(unittest.TestCase):
 
 #     def setUp(self):
@@ -104,6 +116,19 @@ class KeyGeneratorTestCase(unittest.TestCase):
 
 #     def test_encryption_returns_two_points(self):
 #         self.assertTrue(len(self.elcipher.encrypt()))
+
+class MessageEncodingDecodingTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.ec = ECurve(-3, 
+            int("5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b", 16),
+            2**256 - 2**224 + 2**192 + 2**96 - 1)
+
+    def test_encode_decode_gives_back_the_original_value(self):
+        mes = Message("hello world")
+        print(mes.number)
+        pm, mi = mes.encode(self.ec)
+        self.assertEqual(pm.decode(mi), mes.text)
 
 if __name__ == '__main__':
     unittest.main()

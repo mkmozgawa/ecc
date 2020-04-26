@@ -22,5 +22,6 @@ class EPoint:
         return (self.x, self.y)
 
     def decode(self, mi):
-        num = math.floor((self.x-1)/mi)
+        num = (self.x-1)//mi
+        print(num)
         return num.to_bytes((num.bit_length() + 7) // 8, 'big').decode()
