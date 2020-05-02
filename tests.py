@@ -1,7 +1,7 @@
 import unittest
 import math
 
-from helpers import get_inverse
+from helpers import get_inverse, generate_random_number
 from EPoint import EPoint
 from ECurve import ECurve
 from ElGamalCipher import ElGamalCipher
@@ -23,6 +23,14 @@ class HelpersTestCase(unittest.TestCase):
 
     def test_inverse_of_zero_returns_infinity(self):
         self.assertEqual(get_inverse(0, 11), math.inf)
+
+    def test_rng_generates_number_less_than_x(self):
+        self.assertLess(generate_random_number(30), 30)
+    
+    def test_rng_gneerates_number_from_x_inclusive_to_y_exclusive(self):
+        n = generate_random_number(100, 30)
+        self.assertGreaterEqual(n, 30)
+        self.assertLess(n, 100)
 
 class EPointTestCase(unittest.TestCase):
     def setUp(self):
@@ -68,6 +76,7 @@ class ECurveTestCase(unittest.TestCase):
     def test_adding_point_to_another_returns_correct_result(self):
         self.assertEqual(self.ec.add_points(self.p, self.p2).get_coordinates(),
         (6,4))
+        self.assertTrue(self.ec.is_point_on_ec(self.ec.add_points(self.p, self.p2)))
 
     def test_adding_points_that_results_in_infinity_works(self):
         self.assertEqual(self.ec.add_points(self.p, self.p3).get_coordinates(),
@@ -75,10 +84,12 @@ class ECurveTestCase(unittest.TestCase):
 
     def test_doubling_a_point_returns_correct_result(self):
         self.assertEqual(self.ec.double_point(self.p).get_coordinates(), ECURVE_POINTS[1])
+        self.assertTrue(self.ec.is_point_on_ec(self.ec.double_point(self.p)))
 
     def test_multiplying_a_point_twice_returns_the_same_result_as_doubling_it(self):
         self.assertEqual(self.ec.multiply_point_binary(self.p, 2).get_coordinates(), 
         self.ec.double_point(self.p).get_coordinates())
+        self.assertTrue(self.ec.is_point_on_ec(self.ec.multiply_point_binary(self.p, 2)))
 
     def test_multiplying_with_infinity_as_result_works(self):
         self.assertEqual(self.ec.multiply_point_binary(self.p, 3).get_coordinates(), (math.inf, math.inf))
@@ -88,6 +99,7 @@ class ECurveTestCase(unittest.TestCase):
 
     def test_multiplying_a_point_across_infinity_works(self):
         self.assertEqual(self.ec.multiply_point_binary(self.p, 4).get_coordinates(), (0,3))
+        self.assertTrue(self.ec.is_point_on_ec(self.ec.multiply_point_binary(self.p, 4)))
 
 class KeyGeneratorTestCase(unittest.TestCase):
     
@@ -107,6 +119,14 @@ class KeyGeneratorTestCase(unittest.TestCase):
         self.assertIsInstance(self.key.private_key.Q, EPoint)
         self.assertIsNotNone(self.key.private_key.x)
 
+    def test_generated_points_lie_on_the_curve(self):
+        self.assertTrue(self.ec.is_point_on_ec(self.key.public_key.P))
+        self.assertTrue(self.ec.is_point_on_ec(self.key.public_key.Q))
+
+    def test_generated_points_are_the_same_for_private_and_public_key(self):
+        self.assertEqual(self.key.public_key.P.x, self.key.private_key.P.x)
+        self.assertEqual(self.key.public_key.P.y, self.key.private_key.P.y)
+
 # class ElGamalCipherTestCase(unittest.TestCase):
 
 #     def setUp(self):
@@ -115,7 +135,7 @@ class KeyGeneratorTestCase(unittest.TestCase):
 #         self.elcipher = ElGamalCipher()
 
 #     def test_encryption_returns_two_points(self):
-#         self.assertTrue(len(self.elcipher.encrypt()))
+#         self.assertTrue(len(self.elcipher.encrypt()) == 2)
 
 class MessageEncodingDecodingTestCase(unittest.TestCase):
 

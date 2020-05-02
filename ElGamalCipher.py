@@ -6,8 +6,8 @@ class ElGamalCipher:
         pass
 
     def encrypt(public_key, message_point):
-        y = generate_random_number(public_key.ec.p)
-        C_1 = public_key.ec.multiply_point_binary(message_point, y)
+        y = generate_random_number(public_key.ec.order)
+        C_1 = public_key.ec.multiply_point_binary(public_key.P, y)
         C_2 = public_key.ec.add_points(message_point, 
             public_key.ec.multiply_point_binary(public_key.Q, y))
         return (C_1, C_2)

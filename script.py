@@ -12,7 +12,7 @@ if __name__ == "__main__":
     prime = 2**256 - 2**224 + 2**192 + 2**96 - 1
     A = -3
     B = int("5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b", 16)
-    # ec = ECurve(0, 9, 11)
+    # ec = ECurve(0, 9, 419)
     ec = ECurve(A, B, prime)
 
     # print('Punkty: ')
@@ -42,28 +42,29 @@ if __name__ == "__main__":
     # print('Sprawdzanie punktu: ')
     # print('Punkt leży na zadanej krzywej' if ec.is_point_on_ec(p) else 'Punkt nie leży na zadanej krzywej')
 
-    print("Alice generuje klucze")
+    print("1. Alice generuje klucze")
     keys = KeyGenerator(ec)
 
-    print('Bob koduje wiadomość "hello"')
-    M = Message("hello")
+    print('2. Bob koduje wiadomość "hello"')
+    M = Message("twoja stara pierze w rzece")
     M_P, mi = M.encode(ec)
-    print('M_P:')
+    print('Wiadomość zakodowana w punkcie:')
     print(M_P.get_coordinates())
 
-    print("Bob pobiera klucz Alice")
+    print("3. Bob pobiera klucz Alice")
     public_key = keys.public_key
 
-    print("Bob szyfruje wiadomość")
+    print("4. Bob szyfruje wiadomość")
     C_1, C_2 = ElGamalCipher.encrypt(public_key, M_P)
+    print('C1:')
     print(C_1.get_coordinates())
+    print('C2:')
     print(C_2.get_coordinates())
 
-    print("Alice deszyfruje wiadomość")
+    print("4. Alice deszyfruje wiadomość")
     M_P_D = ElGamalCipher.decrypt(keys.private_key, C_1, C_2)
-    print('M_P_D:')
+    print('Zdeszyfrowany punkt:')
     print(M_P_D.get_coordinates())
 
-    print("Alice odkodowuje wiadomość")
-    # print(mi)
-    print(M_P_D.decode(mi))
+    print("5. Alice odkodowuje wiadomość")
+    print('wiadomość: %s' % M_P_D.decode(mi))

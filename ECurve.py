@@ -12,7 +12,7 @@ class ECurve:
         self.__a = a
         self.__b = b
         self.__p = p
-        self.__order = self.p + 1 - math.floor(math.sqrt(self.p))
+        self.__order = self.p + 1 - abs(math.floor(2 * math.sqrt(self.p)))
 
     @property
     def p(self):
