@@ -1,5 +1,6 @@
 
-class Key:
+
+class ECDSAKey:
 
     def __init__(self, ec, P, Q, x=None):
         self.__ec = ec
@@ -9,15 +10,15 @@ class Key:
 
     @property
     def ec(self):
-        return(self.__ec)
-    
+        return self.__ec
+
     @property
     def P(self):
-        return(self.__P)
+        return self.__P
 
     @property
     def Q(self):
-        return(self.__Q)
+        return self.__Q
 
     @property
     def x(self):

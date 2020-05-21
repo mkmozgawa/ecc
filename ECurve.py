@@ -13,6 +13,8 @@ class ECurve:
         self.__b = b
         self.__p = p
         self.__order = self.p + 1 - abs(math.floor(2 * math.sqrt(self.p)))
+        if self.__p == self.__order: # This is not going to work very often because our estimation of order isn't too exact
+            raise AssertionError('Rząd krzywej równy liczbie pierwszej wyznaczającej F. Krzywa podatna na atak Smarta.')
 
     @property
     def p(self):
@@ -44,6 +46,7 @@ class ECurve:
         if not self.is_point_on_ec(point):
             raise AssertionError('Podany punkt nie leży na zadanej krzywej.')
         self.points.append((point.x,point.y))
+        return True
 
     def generate_random_point(self):
         res = -1

@@ -1,12 +1,12 @@
 import unittest
 import math
 
-from helpers import get_inverse, generate_random_number
+from helpers import get_inverse, generate_random_number, get_hash_sha256_hex, get_hash_sha256_bytes
 from EPoint import EPoint
 from ECurve import ECurve
 from ElGamalCipher import ElGamalCipher
-from Key import Key
-from KeyGenerator import KeyGenerator
+from ElGamalKey import ElGamalKey
+from ElGamalKeyGenerator import ElGamalKeyGenerator
 from Message import Message
 
 POINT_X = 0
@@ -101,11 +101,12 @@ class ECurveTestCase(unittest.TestCase):
         self.assertEqual(self.ec.multiply_point_binary(self.p, 4).get_coordinates(), (0,3))
         self.assertTrue(self.ec.is_point_on_ec(self.ec.multiply_point_binary(self.p, 4)))
 
-class KeyGeneratorTestCase(unittest.TestCase):
+
+class ElGamalKeyGeneratorTestCase(unittest.TestCase):
     
     def setUp(self):
         self.ec = ECurve(ECURVE_A, ECURVE_B, ECURVE_P)
-        self.key = KeyGenerator(self.ec)
+        self.key = ElGamalKeyGenerator(self.ec)
 
     def test_public_key_contains_ec_and_two_points(self):
         self.assertIsInstance(self.key.public_key.ec, ECurve)
@@ -146,9 +147,17 @@ class MessageEncodingDecodingTestCase(unittest.TestCase):
 
     def test_encode_decode_gives_back_the_original_value(self):
         mes = Message("hello world")
-        print(mes.number)
         pm, mi = mes.encode(self.ec)
         self.assertEqual(pm.decode(mi), mes.text)
+
+class SHA256HashTestCase(unittest.TestCase):
+
+    def test_sha256_returns_correct_values(self):
+        mes = "hello world"
+        h = "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+        h_bytes = bytes.fromhex(h)
+        self.assertEqual(h, get_hash_sha256_hex(mes))
+        self.assertEqual(h_bytes, get_hash_sha256_bytes(mes))
 
 if __name__ == '__main__':
     unittest.main()

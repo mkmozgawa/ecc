@@ -1,8 +1,6 @@
-
-
 import binascii
 
-from helpers import generate_random_number, get_y_2, get_legendre_symbol_value, get_root_from_legendre
+from helpers import generate_random_number, get_y_2, get_legendre_symbol_value, get_root_from_legendre, get_hash_sha256_hex, get_hash_sha256_bytes
 from EPoint import EPoint
 
 class Message:
@@ -10,6 +8,8 @@ class Message:
     def __init__(self, message_ascii):
         self.__text = message_ascii
         self.__number = int(bin(int.from_bytes(message_ascii.encode(), 'big')), 2)
+        self.__hash_hex = get_hash_sha256_hex(message_ascii)
+        self.__hash_bytes = get_hash_sha256_bytes(message_ascii)
 
     @property
     def text(self):
@@ -18,6 +18,14 @@ class Message:
     @property
     def number(self):
         return self.__number
+
+    @property
+    def hash_hex(self):
+        return self.__hash_hex
+
+    @property
+    def hash_bytes(self):
+        return self.__hash_bytes
 
     def encode(self, ec):
         mi = generate_random_number(50, start=30)

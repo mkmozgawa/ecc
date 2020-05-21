@@ -1,9 +1,9 @@
 from ECurve import ECurve
 from EPoint import EPoint
-from Key import Key
+from ElGamalKey import ElGamalKey
 from helpers import generate_random_number
 
-class KeyGenerator:
+class ElGamalKeyGenerator:
 
     def __init__(self, ec):
         self.ec = ec
@@ -13,8 +13,8 @@ class KeyGenerator:
 
     @property
     def public_key(self):
-        return Key(self.ec, self.__P, self.__Q)
+        return ElGamalKey(self.ec, self.__P, self.__Q)
 
     @property
     def private_key(self):
-        return Key(self.ec, self.__P, self.__Q, self.__x)
+        return ElGamalKey(self.ec, self.__P, self.__Q, self.__x)
