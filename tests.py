@@ -8,6 +8,8 @@ from ElGamalCipher import ElGamalCipher
 from ElGamalKey import ElGamalKey
 from ElGamalKeyGenerator import ElGamalKeyGenerator
 from Message import Message
+from ECDSA import ECDSA
+from ECDSAKeyGenerator import ECDSAKeyGenerator
 
 POINT_X = 0
 POINT_Y = 1
@@ -128,15 +130,6 @@ class ElGamalKeyGeneratorTestCase(unittest.TestCase):
         self.assertEqual(self.key.public_key.P.x, self.key.private_key.P.x)
         self.assertEqual(self.key.public_key.P.y, self.key.private_key.P.y)
 
-# class ElGamalCipherTestCase(unittest.TestCase):
-
-#     def setUp(self):
-#         self.ec = ECurve(ECURVE_A, ECURVE_B, ECURVE_P)
-#         self.p = ECURVE_POINTS[0]
-#         self.elcipher = ElGamalCipher()
-
-#     def test_encryption_returns_two_points(self):
-#         self.assertTrue(len(self.elcipher.encrypt()) == 2)
 
 class MessageEncodingDecodingTestCase(unittest.TestCase):
 
@@ -150,6 +143,7 @@ class MessageEncodingDecodingTestCase(unittest.TestCase):
         pm, mi = mes.encode(self.ec)
         self.assertEqual(pm.decode(mi), mes.text)
 
+
 class SHA256HashTestCase(unittest.TestCase):
 
     def test_sha256_returns_correct_values(self):
@@ -158,6 +152,50 @@ class SHA256HashTestCase(unittest.TestCase):
         h_bytes = bytes.fromhex(h)
         self.assertEqual(h, get_hash_sha256_hex(mes))
         self.assertEqual(h_bytes, get_hash_sha256_bytes(mes))
+
+
+class ECDSATestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.ec = ECurve(-3, 
+            int("5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b", 16),
+            2**256 - 2**224 + 2**192 + 2**96 - 1)
+        self.P = EPoint(48439561293906451759052585252797914202762949526041747995844080717082404635286, 36134250956749795798585127919587881956611106672985015071877198253568414405109, order=2**256 - 2**224 + 2**192 - 89188191075325690597107910205041859247)
+
+    def test_using_correct_signature_on_correct_message_works(self):
+        mes = "hello world"
+        M = Message(mes)
+        keys_Alice = ECDSAKeyGenerator(self.ec, self.P)
+        signature = ECDSA().sign(keys_Alice.private_key, M.hash_hex_int)
+        self.assertTrue(ECDSA().verify_sign(keys_Alice.public_key, signature, M.hash_hex_int))
+        
+    def test_using_incorrect_signature_on_correct_message_raises_assertion_error(self):
+        mes = "hello world"
+        M = Message(mes)
+        keys_Alice = ECDSAKeyGenerator(self.ec, self.P)
+        signature = ECDSA().sign(keys_Alice.private_key, M.hash_hex_int)
+        keys_Mallory = ECDSAKeyGenerator(self.ec, self.P)
+        self.assertRaises(AssertionError, ECDSA().verify_sign, keys_Mallory.public_key, signature, M.hash_hex_int)
+
+    def test_using_correct_signature_on_incorrect_message_raises_assertion_error(self):
+        mes = "hello world"
+        M = Message(mes)
+        keys_Alice = ECDSAKeyGenerator(self.ec, self.P)
+        signature = ECDSA().sign(keys_Alice.private_key, M.hash_hex_int)
+        mes_wrong = "the eagle flies at midnight"
+        M_wrong = Message(mes_wrong)
+        self.assertRaises(AssertionError, ECDSA().verify_sign, keys_Alice.public_key, signature, M_wrong.hash_hex_int)
+
+    def test_using_incorrect_signature_on_incorrect_message_raises_assertion_error(self):
+        mes = "hello world"
+        M = Message(mes)
+        keys_Alice = ECDSAKeyGenerator(self.ec, self.P)
+        signature = ECDSA().sign(keys_Alice.private_key, M.hash_hex_int)
+        mes_wrong = "the eagle flies at midnight"
+        M_wrong = Message(mes_wrong)
+        keys_Mallory = ECDSAKeyGenerator(self.ec, self.P)
+        self.assertRaises(AssertionError, ECDSA().verify_sign, keys_Mallory.public_key, signature, M_wrong.hash_hex_int)
+
 
 if __name__ == '__main__':
     unittest.main()

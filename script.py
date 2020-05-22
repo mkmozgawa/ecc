@@ -7,6 +7,7 @@ from Message import Message
 from ElGamalKeyGenerator import ElGamalKeyGenerator
 from ElGamalCipher import ElGamalCipher
 from ECDSAKeyGenerator import ECDSAKeyGenerator
+from ECDSA import ECDSA
 from helpers import generate_random_number, get_inverse
 
 if __name__ == "__main__":
@@ -77,36 +78,19 @@ if __name__ == "__main__":
     # print('wiadomość: %s' % M_P_D.decode(mi))
 
     ### ECDSA
+    print('0. Generujemy hash H wiadomości M')
+    text = "The eagle lands at midnight"
+    M = Message(text)
+
     print("1. Alice generuje klucze")
     q = 2**256 - 2**224 + 2**192 - 89188191075325690597107910205041859247
     P = EPoint(48439561293906451759052585252797914202762949526041747995844080717082404635286, 36134250956749795798585127919587881956611106672985015071877198253568414405109, order=q)
     assert ec.append_point(P), "Podany punkt nie leży na tej krzywej"
     keys = ECDSAKeyGenerator(ec, P)
-
-    print('2. Alice generuje podpis do wiadomości M')
-    r = 0
-    s = 0
-    while s == 0:
-        while r == 0:
-            k = generate_random_number(q, 1) # 1 to q-1 inc
-            kP = ec.multiply_point_binary(P, k)
-            r = kP.x % q
-        w = get_inverse(k, q)
-        h = int(Message("the eagle lands at midnight").hash_hex, 16)
-        s = (w * (h + keys.private_key.x*r)) % q
-    sigAlice = (s, r)
+    
+    print('2. Alice generuje podpis do hasza H')
+    signature = ECDSA().sign(keys.private_key, M.hash_hex_int)
 
     print('3. Bob weryfikuje podpis')
-    h2 = int(Message("the eagle lands at midnight").hash_hex, 16)
-    v = get_inverse(s, q)
-    u1 = (h2 * v) % q
-    u2 = (r * v) % q
-    u1P = ec.multiply_point_binary(P, u1)
-    u2Q = ec.multiply_point_binary(keys.private_key.Q, u2)
-    X = ec.add_points(u1P, u2Q)
-    if X.is_infinite():
-        raise AssertionError('Błędny podpis!!! X = O')
-    z = X.x % q
-    if z != r:
-        raise AssertionError('Błędny podpis!!!')
-    print('Weryfikacja udana')
+    if ECDSA().verify_sign(keys.public_key, signature, M.hash_hex_int):
+        print('Weryfikacja udana')

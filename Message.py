@@ -27,6 +27,10 @@ class Message:
     def hash_bytes(self):
         return self.__hash_bytes
 
+    @property
+    def hash_hex_int(self):
+        return int(self.__hash_hex, 16)
+
     def encode(self, ec):
         mi = generate_random_number(50, start=30)
         N = generate_random_number(ec.p//mi, start=self.number)
